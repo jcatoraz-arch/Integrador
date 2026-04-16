@@ -66,7 +66,6 @@ COLOR_OPTIONS = [
 ]
 MENU_EXIT_RECT = pygame.Rect(WINDOW_WIDTH // 2 - 180, 470, 360, 90)
 MENU_MULTIPLAYER_RECT = pygame.Rect(WINDOW_WIDTH // 2 - 220, 550, 440, 100)
-MENU_TUTORIAL_RECT = pygame.Rect(WINDOW_WIDTH - 200, WINDOW_HEIGHT - 80, 180, 60)
 MINIMAP_SIZE = 224
 MINIMAP_BORDER = 4
 MINIMAP_RECT = pygame.Rect(16, WINDOW_HEIGHT - 26 - MINIMAP_SIZE, MINIMAP_SIZE, MINIMAP_SIZE)
@@ -547,13 +546,7 @@ def draw_main_menu(surface, active_input, nickname, selected_color_name):
 
     color_label = FONT.render(f"Color seleccionado: {selected_color_name}", True, (220, 220, 220))
     surface.blit(color_label, (20, 20))
-    # Botón Tutorial
-    pygame.draw.rect(surface, (120, 120, 180), MENU_TUTORIAL_RECT, border_radius=30)
 
-    tutorial_text = FONT.render("Tutorial", True, (255,255,255))
-    tutorial_rect = tutorial_text.get_rect(center=MENU_TUTORIAL_RECT.center)
-
-    surface.blit(tutorial_text, tutorial_rect)
 
 def draw_color_menu(surface, selected_color):
     surface.blit(MENU2_BACKGROUND, (0, 0))
@@ -873,34 +866,6 @@ def start_multiplayer_game(name1, color1, name2, color2):
 def respawn_player(player):
     player.respawn()
 
-def draw_tutorial(surface):
-
-    surface.fill((20,20,30))
-
-    title = TITLE_FONT.render("TUTORIAL", True, (255,255,255))
-    surface.blit(title, (WINDOW_WIDTH//2 - 100, 80))
-
-    lines = [
-        "PlayOnline:",
-        "Manejar jugador: Mouse",
-        "Boost: Click",
-        "",
-        "Multiplayer:",
-        "",
-        "Jugador 1:",
-        "Manejar jugador: Mouse",
-        "Boost: Click",
-        "",
-        "Jugador 2:",
-        "Manejar jugador: W A S D",
-        "Boost: Espacio"
-    ]
-
-    y = 200
-    for line in lines:
-        text = FONT.render(line, True, (220,220,220))
-        surface.blit(text, (WINDOW_WIDTH//2 - 200, y))
-        y += 30
 
 def main():
     menu_state = "main"
@@ -964,65 +929,29 @@ def main():
                             player1.respawn()
                         if player2 is not None and not player2.alive:
                             player2.respawn()   
-
             elif event.type == pygame.MOUSEBUTTONDOWN:
-
-                mouse_pos = event.pos
-
                 if menu_state == "main":
-
+                    mouse_pos = event.pos
+                    if MENU_INPUT_RECT.collidepoint(mouse_pos):
+                        active_input = True
+                    else:
+                        active_input = False
                     if MENU_PLAY_RECT.collidepoint(mouse_pos):
                         snakes, player = start_game(nickname, selected_color)
                         menu_state = "playing"
-
                     elif MENU_MULTIPLAYER_RECT.collidepoint(mouse_pos):
                         menu_state = "multiplayer_setup"
-
-                    elif MENU_TUTORIAL_RECT.collidepoint(mouse_pos):
-                        menu_state = "tutorial"
-
+                        player1_name = ""
+                        player2_name = ""
+                        active_input_p1 = True
                     elif MENU_WORM_RECT.collidepoint(mouse_pos):
                         menu_state = "color"
-
-
                 elif menu_state == "color":
-
+                    mouse_pos = event.pos
                     if MENU_EXIT_RECT.collidepoint(mouse_pos):
                         menu_state = "main"
-
                     else:
                         for index, position in enumerate(COLOR_CIRCLE_POSITIONS):
-                            distance = Vector2(mouse_pos).distance_to(position)
-                            if distance <= COLOR_CIRCLE_RADIUS:
-                                selected_color, selected_color_name = COLOR_OPTIONS[index]
-                                break
-
-
-                elif menu_state == "tutorial":
-                    menu_state = "main"
-
-
-                elif menu_state == "multiplayer_setup":
-
-                    if multiplayer_menu_rects["play"] and multiplayer_menu_rects["play"].collidepoint(mouse_pos):
-                        if player1_name.strip():
-                            if not player2_name.strip():
-                                player2_name = "JUGADOR2"
-                            snakes, player1, player2 = start_multiplayer_game(
-                                player1_name, player1_color, player2_name, player2_color
-                            )
-                            menu_state = "multiplayer"
-
-                    elif multiplayer_menu_rects["back"] and multiplayer_menu_rects["back"].collidepoint(mouse_pos):
-                        menu_state = "main"
-
-                    elif multiplayer_menu_rects["input"] and multiplayer_menu_rects["input"].collidepoint(mouse_pos):
-                        active_input_p1 = True
-
-                    else:
-                        active_input_p1 = False
-                    else:
-                    for index, position in enumerate(COLOR_CIRCLE_POSITIONS):
                             distance = Vector2(mouse_pos).distance_to(position)
                             if distance <= COLOR_CIRCLE_RADIUS:
                                 selected_color, selected_color_name = COLOR_OPTIONS[index]
@@ -1042,8 +971,6 @@ def main():
                         active_input_p1 = True
                     else:
                         active_input_p1 = False
-                elif menu_state == "tutorial":
-                    draw_tutorial(SCREEN)
 
         if menu_state == "playing":
             if random.random() < ORB_SPAWN_CHANCE and len(world_orbs) < MAX_ORBS:
