@@ -1,6 +1,4 @@
 """
-Gusanitos Arena — port a Python (pygame) del juego HTML/JS original.
-
 Requisitos:
     pip install pygame
 
